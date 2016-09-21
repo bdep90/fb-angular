@@ -3,14 +3,14 @@
 app.factory('Auth', function(FURL, $firebaseAuth, $firebase) {
 
 	var ref = new Firebase(FURL);
-	ref.authWithCustomToken("AUTH_TOKEN", function(error, authData) {
-	  if (error) {
-	    console.log("Authentication Failed!", error);
-	  } else {
-	    console.log("Authenticated successfully with payload:", authData);
-	  }
-	});
-	
+	// ref.authWithCustomToken("AUTH_TOKEN", function(error, authData) {
+	//   if (error) {
+	//     console.log("Authentication Failed!", error);
+	//   } else {
+	//     console.log("Authenticated successfully with payload:", authData);
+	//   }
+	// });
+
 	var auth = $firebaseAuth(ref);
 
 	var Auth = {
@@ -27,26 +27,46 @@ app.factory('Auth', function(FURL, $firebaseAuth, $firebase) {
       return profileRef.$set(uid, profile);
     },
 
-    login: function(user) {
-      return ref.authWithCustomToken().signInWithEmailAndPassword(email, password).catch(function(error) {
-			  // Handle Errors here.
-			  var errorCode = error.code;
-			  var errorMessage = error.message;
-			  // ...
-			});
+    login: function () {
+			// Sign in with email and pass.
+		 // [START authwithemail]
+		 ref.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+			 // Handle Errors here.
+			 var errorCode = error.code;
+			 var errorMessage = error.message;
+			 // [START_EXCLUDE]
+			 if (errorCode === 'auth/wrong-password') {
+				 alert('Wrong password.');
+			 } else {
+				 alert(errorMessage);
+			 }
+			 console.log(error);
     },
 
-    register: function(user) {
-      return ref.authWithCustomToken().createUserWithEmailAndPassword(email, password).catch(function(error) {
-			  // Handle Errors here.
-			  var errorCode = error.code;
-			  var errorMessage = error.message;
-			  // ...
-			});
+    register: function (user) {
+  		ref.createUser({
+			  email: user.email,
+			  password: user.password
+			}, function(error, userData) {
+				if (error) {
+			    switch (error.code) {
+			      case "EMAIL_TAKEN":
+			        console.log("The new user account cannot be created because the email is already in use.");
+			        break;
+			      case "INVALID_EMAIL":
+			        console.log("The specified email is not a valid email.");
+			        break;
+			      default:
+			        console.log("Error creating user:", error);
+			    }
+			  } else {
+			    console.log("Successfully created user account with uid:", userData);
+			  }
+			})
     },
 
     logout: function() {
-			ref.authWithCustomToken().signOut().then(function() {
+			ref.auth().signOut().then(function() {
 			  // Sign-out successful.
 			}, function(error) {
 			  // An error happened.
@@ -58,7 +78,7 @@ app.factory('Auth', function(FURL, $firebaseAuth, $firebase) {
 		},
 
     signedIn: function() {
-      return ref.authWithCustomToken().onAuthStateChanged(function(user) {
+			ref.auth().onAuthStateChanged(function(user) {
 			  if (user) {
 			    // User is signed in.
 			  } else {
