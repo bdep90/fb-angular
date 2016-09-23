@@ -1,6 +1,7 @@
 'use strict';
 
 app.factory('Offer', function($firebase, $q, Auth, Task) {
+	var ref = firebase.database().ref();
 	var user = Auth.user;
 
 	var Offer = {
@@ -67,6 +68,21 @@ app.factory('Offer', function($firebase, $q, Auth, Task) {
 					return Task.createUserTasks(taskId);
 				});
 		},
+
+		notifyRunner: function(taskId, runnerId) {
+			// Get runner's profile
+			Auth.getProfile(runnerId).$loaded().then(function(runner) {
+				var n = {
+					taskId: taskId,
+					email: runner.email,
+					name: runner.name
+				};
+
+				// Create Notification and Zapier will delete it after use.
+				var notification = $firebase(ref.child('notifications')).$asArray();
+				return notification.$add(n);
+			});
+		}
 
 	};
 

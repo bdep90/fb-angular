@@ -2,16 +2,7 @@
 
 app.factory('Auth', function($firebaseAuth, $firebase) {
 
-	var config = {
-    apiKey: "AIzaSyBwQhhTTe1loZrWFlonLcca9ITFzecvHEE",
-    authDomain: "fireslack-seed-b8bd8.firebaseapp.com",
-    databaseURL: "https://fireslack-seed-b8bd8.firebaseio.com",
-    storageBucket: "fireslack-seed-b8bd8.appspot.com",
-    messagingSenderId: "735127963379"
-  };
-  firebase.initializeApp(config);
-
-	var rootRef = firebase.database().ref();
+	var ref = firebase.database().ref();
 	var auth = firebase.auth();
 
 	var Auth = {

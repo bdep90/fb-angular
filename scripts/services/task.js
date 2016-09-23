@@ -1,6 +1,7 @@
 'use strict';
 
 app.factory('Task', function($firebase, Auth) {
+	var ref = firebase.database().ref();
 	var tasks = $firebase(ref.child('tasks')).$asArray();
 	var user = Auth.user;
 
@@ -37,7 +38,7 @@ app.factory('Task', function($firebase, Auth) {
 						taskId: taskId,
 						type: false,
 						title: task.title
-					};
+					}
 
 					return $firebase(ref.child('user_tasks').child(task.runner)).$push(obj);
 				});

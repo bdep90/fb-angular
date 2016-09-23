@@ -1,6 +1,7 @@
 'use strict';
 
 app.factory('Dashboard', function($firebase, $q) {
+	var ref = firebase.database().ref();
 
 	var Dashboard = {
 

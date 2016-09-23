@@ -2,6 +2,8 @@
 
 app.factory('Comment', function($firebase) {
 
+	var ref = firebase.database().ref();	
+
 	var Comment = {
 		comments: function(taskId) {
 			return $firebase(ref.child('comments').child(taskId)).$asArray();
