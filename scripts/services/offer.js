@@ -1,7 +1,6 @@
 'use strict';
 
-app.factory('Offer', function(FURL, $firebase, $q, Auth, Task) {
-	var ref = new Firebase(FURL);
+app.factory('Offer', function($firebase, $q, Auth, Task) {
 	var user = Auth.user;
 
 	var Offer = {
@@ -27,7 +26,7 @@ app.factory('Offer', function(FURL, $firebase, $q, Auth, Task) {
 				$firebase(ref.child('offers').child(taskId).orderByChild("uid")
 					.equalTo(user.uid))
 					.$asArray()
-					.$loaded().then(function(data) {						
+					.$loaded().then(function(data) {
 						d.resolve(data.length > 0);
 					}, function() {
 						d.reject(false);
@@ -35,7 +34,7 @@ app.factory('Offer', function(FURL, $firebase, $q, Auth, Task) {
 
 				return d.promise;
 			}
-			
+
 		},
 
 		isMaker: function(offer) {
@@ -47,7 +46,7 @@ app.factory('Offer', function(FURL, $firebase, $q, Auth, Task) {
 		},
 
 		cancelOffer: function(taskId, offerId) {
-			return this.getOffer(taskId, offerId).$remove();			
+			return this.getOffer(taskId, offerId).$remove();
 		},
 
 		//-----------------------------------------------//
@@ -56,13 +55,13 @@ app.factory('Offer', function(FURL, $firebase, $q, Auth, Task) {
 			// Step 1: Update Offer with accepted = true
 			var o = this.getOffer(taskId, offerId);
 			return o.$update({accepted: true})
-				.then(function() {				
-						
+				.then(function() {
+
 					// Step 2: Update Task with status = "assigned" and runnerId
-					var t = Task.getTask(taskId);			
-					return t.$update({status: "assigned", runner: runnerId});	
+					var t = Task.getTask(taskId);
+					return t.$update({status: "assigned", runner: runnerId});
 				})
-				.then(function() {					
+				.then(function() {
 
 					// Step 3: Create User-Tasks lookup record for use in Dashboard
 					return Task.createUserTasks(taskId);

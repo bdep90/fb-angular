@@ -1,8 +1,6 @@
 'use strict';
 
-app.factory('Comment', function(FURL, $firebase) {
-
-	var ref = new Firebase(FURL);	
+app.factory('Comment', function($firebase) {
 
 	var Comment = {
 		comments: function(taskId) {
@@ -14,8 +12,8 @@ app.factory('Comment', function(FURL, $firebase) {
 			comment.datetime = Firebase.ServerValue.TIMESTAMP;
 
 			if(task_comments) {
-				return task_comments.$add(comment);	
-			}			
+				return task_comments.$add(comment);
+			}
 		}
 	};
 

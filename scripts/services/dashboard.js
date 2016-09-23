@@ -1,17 +1,16 @@
 'use strict';
 
-app.factory('Dashboard', function(FURL, $firebase, $q) {
-	var ref = new Firebase(FURL);
+app.factory('Dashboard', function($firebase, $q) {
 
 	var Dashboard = {
-		
+
 		getTasksForUser: function(uid) {
 			var defer = $q.defer();
 
 			$firebase(ref.child('user_tasks').child(uid))
 				.$asArray()
 				.$loaded()
-				.then(function(tasks) {					
+				.then(function(tasks) {
 					defer.resolve(tasks);
 				}, function(err) {
 					defer.reject();

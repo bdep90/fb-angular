@@ -1,17 +1,18 @@
 'use strict';
 
-app.factory('Auth', function(FURL, $firebaseAuth, $firebase) {
+app.factory('Auth', function($firebaseAuth, $firebase) {
 
-	var ref = new Firebase(FURL);
-	// ref.authWithCustomToken("AUTH_TOKEN", function(error, authData) {
-	//   if (error) {
-	//     console.log("Authentication Failed!", error);
-	//   } else {
-	//     console.log("Authenticated successfully with payload:", authData);
-	//   }
-	// });
+	var config = {
+    apiKey: "AIzaSyBwQhhTTe1loZrWFlonLcca9ITFzecvHEE",
+    authDomain: "fireslack-seed-b8bd8.firebaseapp.com",
+    databaseURL: "https://fireslack-seed-b8bd8.firebaseio.com",
+    storageBucket: "fireslack-seed-b8bd8.appspot.com",
+    messagingSenderId: "735127963379"
+  };
+  firebase.initializeApp(config);
 
-	var auth = $firebaseAuth(ref);
+	var rootRef = firebase.database().ref();
+	var auth = firebase.auth();
 
 	var Auth = {
 		user: {},
@@ -23,50 +24,30 @@ app.factory('Auth', function(FURL, $firebaseAuth, $firebase) {
         gravatar: get_gravatar(user.email, 40)
       };
 
-      var profileRef = $firebase(ref.child('profile'));
+      var profileRef = $firebase(auth.child('profile'));
       return profileRef.$set(uid, profile);
     },
 
     login: function () {
-			// Sign in with email and pass.
-		 // [START authwithemail]
-		 ref.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
-			 // Handle Errors here.
-			 var errorCode = error.code;
-			 var errorMessage = error.message;
-			 // [START_EXCLUDE]
-			 if (errorCode === 'auth/wrong-password') {
-				 alert('Wrong password.');
-			 } else {
-				 alert(errorMessage);
-			 }
-			 console.log(error);
+			auth.$signInWithEmailAndPassword(email, password).catch(function(error) {
+			  // Handle Errors here.
+			  var errorCode = error.code;
+			  var errorMessage = error.message;
+			  // ...
+			});
     },
 
     register: function (user) {
-  		ref.createUser({
-			  email: user.email,
-			  password: user.password
-			}, function(error, userData) {
-				if (error) {
-			    switch (error.code) {
-			      case "EMAIL_TAKEN":
-			        console.log("The new user account cannot be created because the email is already in use.");
-			        break;
-			      case "INVALID_EMAIL":
-			        console.log("The specified email is not a valid email.");
-			        break;
-			      default:
-			        console.log("Error creating user:", error);
-			    }
-			  } else {
-			    console.log("Successfully created user account with uid:", userData);
-			  }
-			})
+			auth.$createUserWithEmailAndPassword(email, password)
+			 .then(function(user) {
+				 console.log("User created with uid: " + user.uid);
+			 }).catch(function(error) {
+				 console.log(error);
+			 });
     },
 
     logout: function() {
-			ref.auth().signOut().then(function() {
+			auth.signOut().then(function() {
 			  // Sign-out successful.
 			}, function(error) {
 			  // An error happened.
@@ -74,28 +55,33 @@ app.factory('Auth', function(FURL, $firebaseAuth, $firebase) {
     },
 
 		changePassword: function(user) {
-			return auth.$changePassword({email: user.email, oldPassword: user.oldPass, newPassword: user.newPass});
+			return auth.$updatePassword(newPassword)({email: user.email, oldPassword: user.oldPass, newPassword: user.newPass});
 		},
 
-    signedIn: function() {
-			ref.auth().onAuthStateChanged(function(user) {
-			  if (user) {
-			    // User is signed in.
-			  } else {
-			    // No user is signed in.
-			  }
-			});
+    signedIn: function(user) {
+			// auth.onAuthStateChanged(function(user) {
+			//   if (user) {
+			//     // User is signed in.
+			//   } else {
+			//     // No user is signed in.
+			//   }
+			// });
+			// return !!Auth.user.provider; //using !! means (0, undefined, null, etc) = false | otherwise = true
+
+			auth.auth.$onAuthStateChanged(function(user) {
+      auth.user = user;
+    });
     },
 
     requireAuth: function() {
-      return auth.$requireAuth();
+      return auth.$requireSignIn();
     }
 	};
 
-	auth.$onAuth(function(authData) {
+	auth.$onAuthStateChanged(callback)(function(authData) {
 		if(authData) {
       angular.copy(authData, Auth.user);
-      Auth.user.profile = $firebase(ref.child('profile').child(authData.uid)).$asObject();
+      Auth.user.profile = $firebase(auth.child('profile').child(authData.uid)).$asObject();
 		} else {
       if(Auth.user && Auth.user.profile) {
         Auth.user.profile.$destroy();

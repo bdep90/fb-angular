@@ -1,7 +1,6 @@
 'use strict';
 
-app.factory('Task', function(FURL, $firebase, Auth) {
-	var ref = new Firebase(FURL);
+app.factory('Task', function($firebase, Auth) {
 	var tasks = $firebase(ref.child('tasks')).$asArray();
 	var user = Auth.user;
 
@@ -15,7 +14,7 @@ app.factory('Task', function(FURL, $firebase, Auth) {
 		createTask: function(task) {
 			task.datetime = Firebase.ServerValue.TIMESTAMP;
 			return tasks.$add(task).then(function(newTask) {
-				
+
 				// Create User-Tasks lookup record for POSTER
 				var obj = {
 					taskId: newTask.key(),
@@ -32,7 +31,7 @@ app.factory('Task', function(FURL, $firebase, Auth) {
 				.$asObject()
 				.$loaded()
 				.then(function(task) {
-					
+
 					// Create User-Tasks lookup record for RUNNER
 					var obj = {
 						taskId: taskId,
@@ -40,12 +39,12 @@ app.factory('Task', function(FURL, $firebase, Auth) {
 						title: task.title
 					};
 
-					return $firebase(ref.child('user_tasks').child(task.runner)).$push(obj);	
-				});	
+					return $firebase(ref.child('user_tasks').child(task.runner)).$push(obj);
+				});
 		},
 
 		editTask: function(task) {
-			var t = this.getTask(task.$id);			
+			var t = this.getTask(task.$id);
 			return t.$update({title: task.title, description: task.description, total: task.total});
 		},
 
@@ -54,7 +53,7 @@ app.factory('Task', function(FURL, $firebase, Auth) {
 			return t.$update({status: "cancelled"});
 		},
 
-		isCreator: function(task) {			
+		isCreator: function(task) {
 			return (user && user.provider && user.uid === task.poster);
 		},
 
@@ -65,7 +64,7 @@ app.factory('Task', function(FURL, $firebase, Auth) {
 		// --------------------------------------------------//
 
 		isAssignee: function(task) {
-			return (user && user.provider && user.uid === task.runner);	
+			return (user && user.provider && user.uid === task.runner);
 		},
 
 		completeTask: function(taskId) {
